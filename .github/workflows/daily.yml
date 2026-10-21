@@ -1,0 +1,38 @@
+name: Daily price scrape
+on:
+  schedule: [{cron: "0 5 * * *"}]   # every day 05:00 UTC
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "full = scrape and publish, test = 5 yogurts only (nothing saved), list_vero_categories = Vero category list"
+        type: choice
+        default: test
+        options: [test, full, list_vero_categories]
+permissions:
+  contents: write
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    defaults: {run: {working-directory: scraper}}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install requests beautifulsoup4
+      - name: Test (5 yogurts, prints the result, saves nothing)
+        if: ${{ inputs.mode == 'test' }}
+        run: |
+          python pazarluk_scraper.py --only jogurti --limit 5
+          head -40 prices_log.csv
+      - name: List Vero categories
+        if: ${{ inputs.mode == 'list_vero_categories' }}
+        run: python vero_scraper.py --list-categories
+      - name: Scrape and publish
+        if: ${{ inputs.mode != 'test' && inputs.mode != 'list_vero_categories' }}
+        run: |
+          python pazarluk_scraper.py
+          python vero_scraper.py || echo "Vero skipped"
+          python build_json.py
+          git config user.name "price-bot"; git config user.email "bot@users.noreply.github.com"
+          git add -A ..; git commit -m "Prices $(date -u +%F)" || echo "nothing new"; git push
