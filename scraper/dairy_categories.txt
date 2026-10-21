@@ -1,0 +1,2 @@
+# One category per line, exactly as printed by: python vero_scraper.py --list-categories
+# Delete these two example lines and add the real dairy / fermented / butter categories.
