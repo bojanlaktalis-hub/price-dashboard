@@ -1,6 +1,6 @@
 name: Daily price scrape
 on:
-  schedule: [{cron: "0 5 * * *"}]   # every day 05:00 UTC
+  schedule: [{cron: "0 11 * * *"}]   # every day 11:00 UTC
   workflow_dispatch:
     inputs:
       mode:
