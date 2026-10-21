@@ -1,0 +1,2 @@
+# One category per line, exactly as printed by: python kipper_scraper.py --list-categories
+# Add the dairy / fermented / butter categories here.
