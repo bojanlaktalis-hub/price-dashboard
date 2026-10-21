@@ -1,41 +1,4 @@
 <!doctype html>
-<html lang="mk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Цени · Price board</title>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
-<style>
-:root{--bg:#EEF2F5;--card:#fff;--ink:#17212B;--mute:#5B6773;--line:#D5DDE3;--blue:#0F4C81;--tag:#FFD23F;--up:#C03A2B;--down:#1E7B4F}
-@media(prefers-color-scheme:dark){:root{--bg:#10161C;--card:#18212A;--ink:#E8EDF1;--mute:#93A0AB;--line:#2B3844;--blue:#7DB4E5;--up:#FF8A7A;--down:#66D19E}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 "IBM Plex Sans",system-ui,sans-serif}
-main{max-width:1000px;margin:0 auto;padding:24px 16px 48px}
-h1{font:700 34px "Barlow Condensed",sans-serif;margin:0}.sub{color:var(--mute);margin:2px 0 18px}
-.bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
-input,select{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink)}
-input[type=search]{flex:1;min-width:180px}label{display:flex;align-items:center;gap:6px;color:var(--mute)}
-.stats{display:flex;gap:18px;margin:0 0 14px;color:var(--mute)}.stats b{color:var(--ink);font-size:17px}
-.row{display:grid;grid-template-columns:1fr 150px 90px;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-top:0;padding:10px 14px;cursor:pointer}
-.row:first-of-type{border-top:1px solid var(--line);border-radius:8px 8px 0 0}.row:last-of-type{border-radius:0 0 8px 8px}
-.row:hover,.row:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
-.nm{font-weight:500}.meta{color:var(--mute);font-size:13px}
-.price{font:700 26px "Barlow Condensed",sans-serif;text-align:right;line-height:1}.price s{display:block;font:400 12px "IBM Plex Sans";color:var(--mute)}
-.promo .price{background:var(--tag);color:#17212B;padding:6px 8px;border-radius:4px}.promo .price s{color:#4a4a3a}
-.chg{text-align:right;font-weight:500}.up{color:var(--up)}.down{color:var(--down)}.flat{color:var(--mute)}
-.hist{grid-column:1/-1;border-top:1px dashed var(--line);padding-top:8px}svg{width:100%;height:90px}
-.empty{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:28px;text-align:center;color:var(--mute)}
-@media(max-width:560px){.row{grid-template-columns:1fr 100px}.chg{grid-column:2;text-align:right}}
-</style></head><body><main>
-<h1>Цени · Price board</h1><p class="sub" id="upd">Loading…</p>
-<div class="bar"><input type="search" id="q" placeholder="Search a product"><select id="chain"></select><select id="cat"></select>
-<label><input type="checkbox" id="promo"> On promotion only</label></div>
-<div class="stats" id="stats"></div><div id="list"></div></main>
-<script>
-const $=id=>document.getElementById(id);let D=[];
-const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const fmt=n=>n==null?"–":Math.round(n*100)/100;
-function info(it){const h=it.h,l=h[h.length-1],p=h[h.length-2];const d=p&&l[1]!=null&&p[1]!=null?l[1]-p[1]:null;return{l,d,pct:d!=null&&p[1]?d/p[1]*100:null}}
-function spark(h){const v=h.filter(x=>x[1]!=null);if(v.length<2)return'<span class="meta">History appears after two days of data.</span>';
-const W=600,H=90,mn=Math.min(...v.map(x=>x[1])),mx=Math.max(...v.map(x=>x[1])),r=mx-mn||1;
-const pts=v.map((x,i)=>[i/(v.length-1)*(W-20)+10,H-14-(x[1]-mn)/r*(H-28)]);
-return`<svg viewBox="0 0 ${W} ${H}"><polyline fill="none" str<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Цени · Price board</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -62,7 +25,7 @@ input[type=search]{flex:1;min-width:220px}label{display:flex;align-items:center;
 .pr{font:700 24px "Barlow Condensed",sans-serif;text-align:right;line-height:1}.pr s{display:block;font:400 12px "IBM Plex Sans";color:var(--mute)}
 .chg{text-align:right;font-size:14px;font-weight:500}.up{color:var(--up)}.down{color:var(--down)}.flat{color:var(--mute)}
 .pill{font-size:12px;font-weight:500;padding:2px 8px;border-radius:99px}.low{background:var(--lowbg);color:var(--down)}.promo{background:var(--tag);color:#17212B}
-.hist{grid-column:1/-1;border-top:1px dashed var(--line);padding-top:8px}svg{width:100%;height:90px}
+.hist{grid-column:1/-1;border-top:1px dashed var(--line);padding-top:8px}.hist svg{width:100%;height:90px}
 .empty,.more{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:22px;text-align:center;color:var(--mute)}
 @media(max-width:560px){.cr{grid-template-columns:1fr 100px}.chg{display:none}}
 </style></head><body><main>
@@ -104,23 +67,5 @@ j.items.forEach(it=>{const k=it.id||it.name;if(!m.has(k))m.set(k,{name:it.name,c
 G=[...m.values()].sort((a,b)=>a.name.localeCompare(b.name));$("upd").textContent=j.updated?"Last scrape: "+j.updated:"No data yet";
 const opt=(id,all,vals)=>$(id).innerHTML=`<option value="">${all}</option>`+[...new Set(vals)].sort().map(v=>`<option>${esc(v)}</option>`).join("");
 opt("chain","All chains",j.items.map(x=>x.chain));opt("cat","All categories",j.items.map(x=>x.category));render()}).catch(()=>$("upd").textContent="Could not load data/prices.json");
-["q","chain","cat","promo"].forEach(id=>$(id).addEventListener("input",render));
-</script></body></html>
-oke="var(--blue)" stroke-width="2" points="${pts.map(p=>p.join(",")).join(" ")}"/>`+
-`<text x="10" y="12" font-size="11" fill="var(--mute)">${fmt(mx)} max · ${v[0][0]}</text><text x="${W-10}" y="${H-2}" font-size="11" text-anchor="end" fill="var(--mute)">${fmt(mn)} min · ${v[v.length-1][0]}</text></svg>`}
-function render(){const q=$("q").value.toLowerCase(),c=$("chain").value,k=$("cat").value,po=$("promo").checked;
-const rows=D.filter(it=>(!c||it.chain===c)&&(!k||it.category===k)&&it.name.toLowerCase().includes(q)&&(!po||it.h[it.h.length-1][3]));
-const inf=rows.map(it=>[it,info(it)]);const ch=inf.filter(x=>x[1].pct!=null);
-$("stats").innerHTML=`<span><b>${rows.length}</b> products</span><span><b>${inf.filter(x=>x[1].l[3]).length}</b> on promotion</span>`+(ch.length?`<span><b>${fmt(ch.reduce((a,x)=>a+x[1].pct,0)/ch.length)}%</b> average change vs previous day</span>`:"");
-if(!rows.length){$("list").innerHTML='<div class="empty">No products to show. Run the daily scrape, or change the filters.</div>';return}
-$("list").innerHTML=inf.slice(0,300).map(([it,i],n)=>{const cls=i.d>0?"up":i.d<0?"down":"flat";
-return`<div class="row ${i.l[3]?"promo":""}" tabindex="0" data-n="${D.indexOf(it)}"><div><div class="nm">${esc(it.name)}</div><div class="meta">${esc(it.chain)} · ${esc(it.store)} · ${esc(it.category)}</div></div>`+
-`<div class="price">${fmt(i.l[1])} ден${i.l[3]&&i.l[2]?`<s>${fmt(i.l[2])} regular</s>`:""}</div><div class="chg ${cls}">${i.d==null?"new":(i.d>0?"+":"")+fmt(i.d)+" ("+fmt(i.pct)+"%)"}</div></div>`}).join("")}
-$("list").addEventListener("click",e=>{const r=e.target.closest(".row");if(!r)return;const o=r.querySelector(".hist");if(o)return o.remove();
-r.insertAdjacentHTML("beforeend",`<div class="hist">${spark(D[r.dataset.n].h)}</div>`)});
-$("list").addEventListener("keydown",e=>{if(e.key==="Enter")e.target.click()});
-fetch("data/prices.json").then(r=>r.json()).then(j=>{D=j.items;$("upd").textContent=j.updated?"Last scrape: "+j.updated:"No data yet";
-const opt=(id,all,vals)=>$(id).innerHTML=`<option value="">${all}</option>`+[...new Set(vals)].sort().map(v=>`<option>${esc(v)}</option>`).join("");
-opt("chain","All chains",D.map(x=>x.chain));opt("cat","All categories",D.map(x=>x.category));render()}).catch(()=>$("upd").textContent="Could not load data/prices.json");
 ["q","chain","cat","promo"].forEach(id=>$(id).addEventListener("input",render));
 </script></body></html>
