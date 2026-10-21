@@ -25,7 +25,22 @@ OUT_CSV, DELAY, MAX_PAGES = "prices_log.csv", 1.0, 80
 HEADERS = {"User-Agent": "Mozilla/5.0 (price-survey research script)"}
 COLUMNS = ["date", "store_chain", "store_name", "product_name_raw", "product_name", "category",
            "unit", "selling_price", "regular_price", "discount_price", "discount_pct",
-           "promo_type", "promo_period", "available", "list_updated", "url"]
+           "promo_type", "promo_period", "available", "list_updated", "url", "brand"]
+
+
+def ensure_header():
+    """Old log files have no brand column: add it (empty) so new rows line up."""
+    if not os.path.exists(OUT_CSV):
+        return
+    with open(OUT_CSV, encoding="utf-8-sig", newline="") as f:
+        rd = csv.DictReader(f)
+        if "brand" in (rd.fieldnames or []):
+            return
+        old = list(rd)
+    with open(OUT_CSV, "w", encoding="utf-8-sig", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=COLUMNS, restval="")
+        w.writeheader()
+        w.writerows(old)
 
 
 def num(t):
@@ -73,8 +88,14 @@ def category_products(slug, session, limit=None):
 
 
 def parse_product(html, url):
-    """Return (title, updated_text, [(chain, price, is_promo)], min30, max30)."""
+    """Return (title, updated_text, [(chain, price, is_promo)], min30, max30, brand)."""
     soup = BeautifulSoup(html, "html.parser")
+    brand = ""                                            # the first brand link after the words "од брендот"
+    t = soup.find(string=re.compile("од брендот"))
+    if t:
+        a = t.find_next("a", href=re.compile("/brand/"))
+        if a:
+            brand = (a.get_text(strip=True) or (a.find("img") or {}).get("alt", "")).strip()
     for img in soup.find_all("img"):                      # chain logos carry the chain name in alt
         img.replace_with(f" @@{(img.get('alt') or '').strip()}@@ ")
     h1 = soup.find("h1")
@@ -92,19 +113,29 @@ def parse_product(html, url):
         if parts[i] and pm:
             chains.append((parts[i], num(pm.group(1)), "Акциска цена" in chunk))
     mm = re.search(r"Минимум:\s*([\d.,]+)\s*ден\s*Максимум:\s*([\d.,]+)", text)
-    return title, updated, chains, (num(mm.group(1)) if mm else None), (num(mm.group(2)) if mm else None)
+    return title, updated, chains, (num(mm.group(1)) if mm else None), (num(mm.group(2)) if mm else None), brand
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--only", help="one category slug, e.g. jogurti")
     ap.add_argument("--limit", type=int, help="max products per category (for testing)")
+    ap.add_argument("--replace-today", action="store_true", help="delete today's Pazarluk rows and scrape them again")
     a = ap.parse_args()
     today = dt.date.today().isoformat()
+    ensure_header()
+    if a.replace_today and os.path.exists(OUT_CSV):
+        with open(OUT_CSV, encoding="utf-8-sig", newline="") as f:
+            keep = [r for r in csv.DictReader(f) if not (r["date"] == today and r["store_name"] == STORE)]
+        with open(OUT_CSV, "w", encoding="utf-8-sig", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=COLUMNS, restval="")
+            w.writeheader()
+            w.writerows(keep)
     if os.path.exists(OUT_CSV):
         with open(OUT_CSV, encoding="utf-8-sig", newline="") as f:
             if any(r["date"] == today and r["store_name"] == STORE for r in csv.DictReader(f)):
-                sys.exit(f"Pazarluk already logged for {today}.")
+                print(f"Pazarluk already logged for {today} - nothing to add.")
+                return
     s, rows, done = requests.Session(), [], set()
     for slug, cat in CATEGORIES.items():
         if a.only and slug != a.only:
@@ -115,9 +146,11 @@ def main():
                 continue
             done.add(url)
             try:
-                title, upd, chains, _, _ = parse_product(get(url, s), url)
+                title, upd, chains, _, _, brand = parse_product(get(url, s), url)
             except Exception as e:
                 print("  skipped", url, e); continue
+            if a.limit:
+                print("  ", title, "| brand:", brand or "(none found)")
             if not chains:
                 print("  no prices found:", url)
             for chain, price, promo in chains:
@@ -126,7 +159,7 @@ def main():
                              "category": cat, "unit": "", "selling_price": price, "regular_price": "",
                              "discount_price": price if promo else "", "discount_pct": "",
                              "promo_type": "Акциска цена" if promo else "", "promo_period": "",
-                             "available": "", "list_updated": upd, "url": url})
+                             "available": "", "list_updated": upd, "url": url, "brand": brand})
             time.sleep(DELAY)
     if not rows:
         sys.exit("No rows collected - the page layout may have changed.")
