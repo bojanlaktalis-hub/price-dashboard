@@ -36,8 +36,8 @@ def scrape():
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
-        page.goto(URL, wait_until="networkidle", timeout=90000)
-        page.wait_for_selector("table tbody tr td", timeout=60000)
+        page.goto(URL, wait_until="domcontentloaded", timeout=90000)   # the page never gets fully "idle" (ads), so do not wait for that
+        page.wait_for_selector("table tbody tr td", timeout=90000)
         heads = [h.inner_text().strip() for h in page.query_selector_all("table thead th")]
         if heads[:9] != HEADERS:
             sys.exit(f"The table columns are different from expected: {heads}")
@@ -85,7 +85,8 @@ def main():
     if os.path.exists(OUT_CSV):
         with open(OUT_CSV, encoding="utf-8-sig", newline="") as f:
             if any(r["date"] == today and r["store_name"] == STORE for r in csv.DictReader(f)):
-                sys.exit(f"{STORE} already logged for {today}.")
+                print(f"{STORE} already logged for {today} - nothing to add.")
+                return
     new = not os.path.exists(OUT_CSV)
     with open(OUT_CSV, "a", encoding="utf-8-sig", newline="") as f:
         w = csv.DictWriter(f, fieldnames=COLUMNS)
