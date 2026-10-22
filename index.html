@@ -36,7 +36,7 @@ input[type=search]{flex:1;min-width:220px}label{display:flex;align-items:center;
 </style></head><body><main>
 <div class="top"><div><h1>Цени · Price board</h1><p class="sub" id="upd">Loading…</p></div>
 <button class="btn" id="exp" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>Export to Excel</button></div>
-<div class="bar"><input type="search" id="q" aria-label="Search a product" placeholder="Search a product"><details class="ms" id="chain"><summary>All chains</summary><div class="panel"></div></details><details class="ms" id="cat"><summary>All categories</summary><div class="panel"></div></details><select id="brand" aria-label="Brand"></select>
+<div class="bar"><input type="search" id="q" aria-label="Search a product" placeholder="Search a product"><details class="ms" id="chain"><summary>All chains</summary><div class="panel"></div></details><details class="ms" id="cat"><summary>All categories</summary><div class="panel"></div></details><details class="ms" id="brand"><summary>All brands</summary><div class="panel"></div></details>
 <label><input type="checkbox" id="promo"> On promotion only</label></div>
 <div class="stats" id="stats"></div><div id="list"></div></main>
 <script>
@@ -52,8 +52,8 @@ return`<svg viewBox="0 0 ${W} ${H}"><polyline fill="none" stroke="var(--blue)" s
 const sel=id=>[...document.querySelectorAll("#"+id+" input:checked")].map(i=>i.value),ALL={};
 function lbl(id){const s=sel(id);$(id).querySelector("summary").textContent=!s.length?ALL[id]:s.length===1?s[0]:s.length+" selected"}
 function ms(id,all,vals){ALL[id]=all;$(id).querySelector(".panel").innerHTML='<button type="button" class="clr">Clear selection</button>'+[...new Set(vals)].sort().map(v=>`<label><input type="checkbox" value="${esc(v)}"> ${esc(v)}</label>`).join("");lbl(id)}
-function view(){const q=$("q").value.toLowerCase(),c=sel("chain"),k=sel("cat"),b=$("brand").value,po=$("promo").checked;
-return G.filter(g=>(!k.length||k.includes(g.category))&&(!b||g.brand===b)&&(g.name+" "+g.brand).toLowerCase().includes(q)).map(g=>({...g,rows:g.items.filter(it=>!c.length||c.includes(it.chain)).map(it=>({it,...last(it)})).filter(r=>r.price!=null&&(!po||r.promo)).sort((a,b)=>a.price-b.price)})).filter(g=>g.rows.length)}
+function view(){const q=$("q").value.toLowerCase(),c=sel("chain"),k=sel("cat"),b=sel("brand"),po=$("promo").checked;
+return G.filter(g=>(!k.length||k.includes(g.category))&&(!b.length||b.includes(g.brand))&&(g.name+" "+g.brand).toLowerCase().includes(q)).map(g=>({...g,rows:g.items.filter(it=>!c.length||c.includes(it.chain)).map(it=>({it,...last(it)})).filter(r=>r.price!=null&&(!po||r.promo)).sort((a,b)=>a.price-b.price)})).filter(g=>g.rows.length)}
 function render(){V=view();const n=V.reduce((a,g)=>a+g.rows.length,0),pr=V.reduce((a,g)=>a+g.rows.filter(r=>r.promo).length,0);
 $("stats").innerHTML=`<span><b>${V.length}</b> products</span><span><b>${n}</b> prices</span><span><b>${pr}</b> on promotion</span>`;
 if(!V.length){$("list").innerHTML='<div class="empty">No products to show. Run the daily scrape, or change the filters.</div>';return}
@@ -74,9 +74,9 @@ fetch("data/prices.json").then(r=>r.json()).then(j=>{const m=new Map();
 j.items.forEach(it=>{const k=it.id||it.name;if(!m.has(k))m.set(k,{name:it.name,category:it.category,brand:"",items:[]});const g=m.get(k);if(!g.brand&&it.brand)g.brand=it.brand;g.items.push(it)});
 G=[...m.values()].sort((a,b)=>a.name.localeCompare(b.name));$("upd").textContent=j.updated?"Last scrape: "+j.updated:"No data yet";
 const opt=(id,all,vals)=>$(id).innerHTML=`<option value="">${all}</option>`+[...new Set(vals)].sort().map(v=>`<option>${esc(v)}</option>`).join("");
-ms("chain","All chains",j.items.map(x=>x.chain));ms("cat","All categories",j.items.map(x=>x.category));opt("brand","All brands",j.items.map(x=>x.brand).filter(Boolean));render()}).catch(()=>$("upd").textContent="Could not load data/prices.json");
-["q","brand","promo"].forEach(id=>$(id).addEventListener("input",render));
-["chain","cat"].forEach(id=>{const el=$(id);
+ms("chain","All chains",j.items.map(x=>x.chain));ms("cat","All categories",j.items.map(x=>x.category));ms("brand","All brands",j.items.map(x=>x.brand).filter(Boolean));render()}).catch(()=>$("upd").textContent="Could not load data/prices.json");
+["q","promo"].forEach(id=>$(id).addEventListener("input",render));
+["chain","cat","brand"].forEach(id=>{const el=$(id);
 el.addEventListener("change",e=>{if(e.target.matches("input")){lbl(id);render()}});
 el.addEventListener("click",e=>{if(e.target.matches(".clr")){el.querySelectorAll("input").forEach(i=>i.checked=false);lbl(id);render()}})});
 document.addEventListener("click",e=>document.querySelectorAll(".ms[open]").forEach(d=>{if(!d.contains(e.target))d.open=false}));
