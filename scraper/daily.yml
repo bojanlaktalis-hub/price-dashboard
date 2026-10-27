@@ -1,0 +1,53 @@
+name: Daily price scrape
+on:
+  schedule: [{cron: "0 11 * * *"}]   # every day 11:00 UTC
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "full = scrape and publish, refresh_today = redo today's Pazarluk prices, test = 5 yogurts only, list_vero_categories, list_kipper_categories, probe_chains"
+        type: choice
+        default: test
+        options: [test, full, refresh_today, list_vero_categories, list_kipper_categories, probe_chains]
+permissions:
+  contents: write
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    defaults: {run: {working-directory: scraper}}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install requests beautifulsoup4
+      - name: Test (5 yogurts, prints the result, saves nothing)
+        if: ${{ inputs.mode == 'test' }}
+        run: |
+          python pazarluk_scraper.py --only jogurti --limit 5
+          head -40 prices_log.csv
+      - name: List Vero categories
+        if: ${{ inputs.mode == 'list_vero_categories' }}
+        run: python vero_scraper.py --list-categories
+      - name: Install browser (for Kipper)
+        if: ${{ inputs.mode != 'test' && inputs.mode != 'list_vero_categories' }}
+        run: |
+          pip install playwright
+          playwright install --with-deps chromium
+      - name: Probe the chains' own price pages
+        if: ${{ inputs.mode == 'probe_chains' }}
+        run: python chain_scraper.py --probe
+      - name: List Kipper categories
+        if: ${{ inputs.mode == 'list_kipper_categories' }}
+        run: python kipper_scraper.py --list-categories
+      - name: Scrape and publish
+        if: ${{ inputs.mode != 'test' && inputs.mode != 'list_vero_categories' && inputs.mode != 'list_kipper_categories' && inputs.mode != 'probe_chains' }}
+        run: |
+          python pazarluk_scraper.py ${{ inputs.mode == 'refresh_today' && '--replace-today' || '' }}
+          python vero_scraper.py || echo "Vero skipped"
+          python kipper_scraper.py || echo "Kipper skipped"
+          python chain_scraper.py || echo "Chains skipped"
+          python build_json.py
+          git config user.name "price-bot"; git config user.email "bot@users.noreply.github.com"
+          git add -A ..; git commit -m "Prices $(date -u +%F)" || echo "nothing new"
+          git pull --rebase -X theirs origin main
+          git push
