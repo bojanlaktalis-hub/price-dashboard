@@ -4,13 +4,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-:root{--bg:#EEF2F5;--card:#fff;--ink:#17212B;--mute:#5B6773;--line:#D5DDE3;--blue:#0F4C81;--tag:#FFD23F;--up:#C03A2B;--down:#1E7B4F;--lowbg:#DCF1E6}
-@media(prefers-color-scheme:dark){:root{--bg:#10161C;--card:#18212A;--ink:#E8EDF1;--mute:#93A0AB;--line:#2B3844;--blue:#7DB4E5;--up:#FF8A7A;--down:#66D19E;--lowbg:#1B3B2D}}
+:root{--bg:#EAF2F8;--card:#fff;--ink:#0E2436;--mute:#50687B;--line:#CCDDE9;--blue:#05588F;--accent:#3DB6E0;--tag:#C4E9F8;--tagfg:#06395C;--btnbg:#05588F;--btnfg:#fff;--warn:#A87400;--up:#B83A2E;--down:#1B7A4E;--lowbg:#DDF1E8}
+@media(prefers-color-scheme:dark){:root{--bg:#0B1B29;--card:#12293B;--ink:#E4F0F8;--mute:#8FAEC4;--line:#24435A;--blue:#6BC8EE;--accent:#4FBBE6;--tag:#1F5C7E;--tagfg:#EAF7FD;--btnbg:#3FA9D6;--btnfg:#06202F;--warn:#E0B13C;--up:#FF8F80;--down:#62D3A0;--lowbg:#143D33}}
+body{border-top:4px solid var(--accent)}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 "IBM Plex Sans",system-ui,sans-serif}
 main{max-width:1000px;margin:0 auto;padding:28px 16px 48px}
 .top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
-h1{font:700 36px "Barlow Condensed",sans-serif;margin:0}.sub{color:var(--mute);margin:2px 0 0}
-.btn{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border:0;border-radius:8px;background:var(--tag);color:#17212B;font:500 15px "IBM Plex Sans",sans-serif;cursor:pointer}
+h1{font:700 36px "Barlow Condensed",sans-serif;margin:0;color:var(--blue)}.sub{color:var(--mute);margin:2px 0 0}
+.btn{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border:0;border-radius:8px;background:var(--btnbg);color:var(--btnfg);font:500 15px "IBM Plex Sans",sans-serif;cursor:pointer}
 .bar{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 14px}
 input[type=search],select{min-height:44px;padding:0 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit}
 input[type=search]{flex:1;min-width:220px}label{display:flex;align-items:center;gap:8px;min-height:44px;color:var(--mute)}
@@ -24,7 +25,7 @@ input[type=search]{flex:1;min-width:220px}label{display:flex;align-items:center;
 .cn{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-weight:500}
 .pr{font:700 24px "Barlow Condensed",sans-serif;text-align:right;line-height:1}.pr s{display:block;font:400 12px "IBM Plex Sans";color:var(--mute)}
 .chg{text-align:right;font-size:14px;font-weight:500}.up{color:var(--up)}.down{color:var(--down)}.flat{color:var(--mute)}
-.pill{font-size:12px;font-weight:500;padding:2px 8px;border-radius:99px}.low{background:var(--lowbg);color:var(--down)}.promo{background:var(--tag);color:#17212B}
+.pill{font-size:12px;font-weight:500;padding:2px 8px;border-radius:99px}.low{background:var(--lowbg);color:var(--down)}.promo{background:var(--tag);color:var(--tagfg)}
 .hist{grid-column:1/-1;border-top:1px dashed var(--line);padding-top:8px}.hist svg{width:100%;height:90px}
 .empty,.more{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:22px;text-align:center;color:var(--mute)}
 .ms{position:relative}.ms summary{list-style:none;min-height:44px;display:flex;align-items:center;gap:8px;padding:0 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);cursor:pointer;white-space:nowrap}
@@ -33,12 +34,14 @@ input[type=search]{flex:1;min-width:220px}label{display:flex;align-items:center;
 .panel label{min-height:36px;padding:0 8px;border-radius:6px;color:var(--ink)}.panel label:hover{background:var(--bg)}
 .clr{width:100%;min-height:36px;border:0;background:none;color:var(--blue);text-align:left;padding:0 8px;cursor:pointer;font:inherit}
 [hidden]{display:none!important}
-.tabs{display:flex;gap:6px;margin:18px 0 0}.tabs button{min-height:44px;padding:0 16px;border:1px solid var(--line);border-radius:8px 8px 0 0;background:var(--card);color:var(--mute);font:500 15px "IBM Plex Sans",sans-serif;cursor:pointer}.tabs .on{color:var(--ink);border-bottom-color:var(--tag);box-shadow:inset 0 -3px 0 var(--tag)}
+.hd{display:flex;align-items:center;gap:18px;flex-wrap:wrap}.logobox{display:inline-flex;background:#fff;border:1px solid var(--line);border-radius:10px;padding:4px 10px}.logobox img{display:block;height:64px;width:auto}
+@media(max-width:560px){.logobox img{height:48px}}
+.tabs{display:flex;gap:6px;margin:18px 0 0}.tabs button{min-height:44px;padding:0 16px;border:1px solid var(--line);border-radius:8px 8px 0 0;background:var(--card);color:var(--mute);font:500 15px "IBM Plex Sans",sans-serif;cursor:pointer}.tabs .on{color:var(--ink);border-bottom-color:var(--accent);box-shadow:inset 0 -3px 0 var(--accent)}
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px}.kpi span{display:block;color:var(--mute);font-size:13px}.kpi b{font:700 32px "Barlow Condensed",sans-serif}
-.hi{color:var(--up)}.lo{color:var(--down)}.md{color:#B8860B}@media(prefers-color-scheme:dark){.md{color:var(--tag)}}
+.hi{color:var(--up)}.lo{color:var(--down)}.md{color:var(--warn)}
 .ptr{display:grid;grid-template-columns:120px 100px 100px 1fr 64px;gap:12px;align-items:center;padding:9px 18px;border-top:1px solid var(--line)}.pth{color:var(--mute);font-size:12px;text-transform:uppercase;border-top:0}
 .pv{font:700 22px "Barlow Condensed",sans-serif;text-align:right}.ptr .idx{font:700 24px "Barlow Condensed",sans-serif;text-align:right}
-.pbar{position:relative;height:14px;background:var(--bg);border-radius:7px}.pbar:before{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:2px;background:var(--mute)}.pbar b{position:absolute;top:0;bottom:0;border-radius:7px}.pbar .r{left:50%}.pbar .l{right:50%}.pbar .hi{background:var(--up)}.pbar .lo{background:var(--down)}.pbar .md{background:var(--tag)}
+.pbar{position:relative;height:14px;background:var(--bg);border-radius:7px}.pbar:before{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:2px;background:var(--mute)}.pbar b{position:absolute;top:0;bottom:0;border-radius:7px}.pbar .r{left:50%}.pbar .l{right:50%}.pbar .hi{background:var(--up)}.pbar .lo{background:var(--down)}.pbar .md{background:var(--warn)}
 .pcard h2{margin:0;padding:14px 18px;font-size:16px;font-weight:500;border-bottom:1px solid var(--line)}.pcard h2 small{color:var(--mute);font-weight:400;margin-left:8px}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:16px}.two .card{margin:0}
 .brw{display:grid;grid-template-columns:130px 1fr 52px;gap:10px;align-items:center;padding:8px 18px}.brt{height:12px;background:var(--bg);border-radius:6px}.brt b{display:block;height:100%;border-radius:6px;background:var(--blue)}.brt .c{background:var(--mute)}.brw em{font:700 20px "Barlow Condensed",sans-serif;text-align:right;font-style:normal}
@@ -46,7 +49,7 @@ input[type=search]{flex:1;min-width:220px}label{display:flex;align-items:center;
 @media(max-width:700px){.kpis{grid-template-columns:1fr 1fr}.two{grid-template-columns:1fr}.ptr{grid-template-columns:90px 1fr 56px}.ptr>:nth-child(2),.ptr>:nth-child(3){display:none}}
 @media(max-width:560px){.cr{grid-template-columns:1fr 100px}.chg{display:none}}
 </style></head><body><main>
-<div class="top"><div><h1>Цени · Price board</h1><p class="sub" id="upd">Loading…</p></div>
+<div class="top"><div class="hd"><span class="logobox"><img src="logo.png" alt="Lactalis MKD" width="173" height="64"></span><div><h1>Цени · Price board</h1><p class="sub" id="upd">Loading…</p></div></div>
 <button class="btn" id="exp" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>Export to Excel</button></div>
 <nav class="tabs"><button type="button" data-tab="board" class="on">Цени по производ</button><button type="button" data-tab="pos">Ценовно позиционирање</button></nav>
 <div id="board"><div class="bar"><input type="search" id="q" aria-label="Search a product" placeholder="Search a product"><details class="ms" id="chain"><summary>All chains</summary><div class="panel"></div></details><details class="ms" id="cat"><summary>All categories</summary><div class="panel"></div></details><details class="ms" id="brand"><summary>All brands</summary><div class="panel"></div></details>
