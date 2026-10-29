@@ -47,14 +47,21 @@ input[type=search]{flex:1;min-width:220px}label{display:flex;align-items:center;
 .brw{display:grid;grid-template-columns:130px 1fr 52px;gap:10px;align-items:center;padding:8px 18px}.brt{height:12px;background:var(--bg);border-radius:6px}.brt b{display:block;height:100%;border-radius:6px;background:var(--blue)}.brt .c{background:var(--mute)}.brw em{font:700 20px "Barlow Condensed",sans-serif;text-align:right;font-style:normal}
 .pnote{color:var(--mute);font-size:13px;margin:12px 0}details.card summary{padding:12px 18px;cursor:pointer}details.card p{margin:0;padding:6px 18px;font-size:13px}
 @media(max-width:700px){.kpis{grid-template-columns:1fr 1fr}.two{grid-template-columns:1fr}.ptr{grid-template-columns:90px 1fr 56px}.ptr>:nth-child(2),.ptr>:nth-child(3){display:none}}
+.sl{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 4px 0 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}.sl small{color:var(--mute)}.sl select{border:0;background:transparent;min-height:40px;padding:0 8px}
+.cseg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}.cseg button{min-height:42px;padding:0 14px;border:0;background:var(--card);color:var(--mute);cursor:pointer;font:inherit}.cseg .on{background:var(--tag);color:var(--tagfg)}
+.cqs{overflow-x:auto}.cq{display:grid;gap:8px;align-items:center;padding:10px 16px;border-top:1px solid var(--line)}.cqh{border-top:0;color:var(--mute);font-size:12px;text-transform:uppercase}.cqme{background:color-mix(in srgb,var(--blue) 10%,var(--card));border-top:0}
+.cqn{font-weight:500}.cqn em{font-style:normal;font-size:11px;background:var(--btnbg);color:var(--btnfg);border-radius:99px;padding:2px 7px;margin-right:6px}
+.cqc{text-align:center}.cqc b{display:block;font:700 22px "Barlow Condensed",sans-serif;line-height:1.1}.cqc small{display:block;font-size:11px;color:var(--mute)}
+.cq-ok b,.cq-ok small{color:var(--down)}.cq-bad b,.cq-bad small{color:var(--up)}.cq-mid b,.cq-mid small{color:var(--warn)}.cq-na{color:var(--mute)}
+.leg{display:flex;gap:16px;flex-wrap:wrap;color:var(--mute);font-size:13px;margin-top:10px}.leg i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
 @media(max-width:560px){.cr{grid-template-columns:1fr 100px}.chg{display:none}}
 </style></head><body><main>
 <div class="top"><div class="hd"><span class="logobox"><img src="logo.png" alt="Lactalis MKD" width="173" height="64"></span><div><h1>Цени · Price board</h1><p class="sub" id="upd">Loading…</p></div></div>
 <button class="btn" id="exp" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>Export to Excel</button></div>
-<nav class="tabs"><button type="button" data-tab="board" class="on">Цени по производ</button><button type="button" data-tab="pos">Ценовно позиционирање</button></nav>
+<nav class="tabs"><button type="button" data-tab="board" class="on">Цени по производ</button><button type="button" data-tab="pos">Ценовно позиционирање</button><button type="button" data-tab="cmp">Цена за цена</button></nav>
 <div id="board"><div class="bar"><input type="search" id="q" aria-label="Search a product" placeholder="Search a product"><details class="ms" id="chain"><summary>All chains</summary><div class="panel"></div></details><details class="ms" id="cat"><summary>All categories</summary><div class="panel"></div></details><details class="ms" id="brand"><summary>All brands</summary><div class="panel"></div></details>
 <label><input type="checkbox" id="promo"> On promotion only</label></div>
-<div class="stats" id="stats"></div><div id="list"></div></div><div id="pos" hidden></div></main>
+<div class="stats" id="stats"></div><div id="list"></div></div><div id="pos" hidden></div><div id="cmp" hidden></div></main>
 <script>
 const $=id=>document.getElementById(id),MAX=150;let G=[],V=[];
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -82,7 +89,7 @@ return`<div class="cr" tabindex="0" data-g="${gi}" data-r="${ri}"><div class="cn
 $("list").addEventListener("click",e=>{const r=e.target.closest(".cr");if(!r)return;const o=r.querySelector(".hist");if(o)return o.remove();
 r.insertAdjacentHTML("beforeend",`<div class="hist">${spark(V[r.dataset.g].rows[r.dataset.r].it.h)}</div>`)});
 $("list").addEventListener("keydown",e=>{if(e.key==="Enter")e.target.click()});
-$("exp").addEventListener("click",()=>{if(tab==="pos")return exportPos();if(!V.length)return alert("Nothing to export.");
+$("exp").addEventListener("click",()=>{if(tab==="pos")return exportPos();if(tab==="cmp")return exportCmp();if(!V.length)return alert("Nothing to export.");
 const rows=V.flatMap(g=>g.rows.map(r=>({Product:g.name,Brand:g.brand,Category:g.category,Chain:r.it.chain,"Price (ден)":r.price,"Regular price (ден)":r.reg,Promotion:r.promo?"Yes":"No","Change vs previous day (ден)":r.d,"Change (%)":r.pct==null?null:Math.round(r.pct*10)/10,"Price date":r.date})));
 const ws=XLSX.utils.json_to_sheet(rows);ws["!cols"]=[{wch:46},{wch:16},{wch:20},{wch:12},{wch:12},{wch:16},{wch:10},{wch:18},{wch:10},{wch:12}];
 const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Prices");XLSX.writeFile(wb,"price-board-"+new Date().toISOString().slice(0,10)+".xlsx")});
@@ -126,8 +133,56 @@ const a=XLSX.utils.json_to_sheet(R.rows.map(r=>({"Синџир":r.name,"Наши
 b=XLSX.utils.json_to_sheet(R.unsized.map(x=>({"Бренд":x.m.b,"Производ":x.it.name,"Синџир":x.it.chain,"Категорија":x.it.category,"Цена (ден)":x.price})));
 a["!cols"]=[{wch:14},{wch:20},{wch:24},{wch:8},{wch:20}];b["!cols"]=[{wch:14},{wch:50},{wch:12},{wch:20},{wch:12}];
 const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,a,"Индекс по синџир");XLSX.utils.book_append_sheet(wb,b,"Без големина");XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(R.used.map(x=>({"Тип":x.m.s==="own"?"наш":"конкуренција","Бренд":x.m.b,"Производ":x.it.name,"Синџир":x.it.chain,"Големина":x.it.size,"Мерка":x.it.kind==="l"?"л":"кг","Цена (ден)":x.price,"Ден по л/кг":Math.round(x.ppu*100)/100}))),"Споредени");XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(R.odd.map(x=>({"Бренд":x.m.b,"Производ":x.it.name,"Синџир":x.it.chain,"Големина":x.it.size,"Ден по л/кг":Math.round(x.ppu*100)/100}))),"Сомнителни");XLSX.writeFile(wb,"cenovno-pozicionirane-"+new Date().toISOString().slice(0,10)+".xlsx")}
-document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",()=>{tab=b.dataset.tab;document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x===b));$("board").hidden=tab!=="board";$("pos").hidden=tab!=="pos";if(tab==="pos")renderPos()}));
+document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",()=>{tab=b.dataset.tab;document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x===b));$("board").hidden=tab!=="board";$("pos").hidden=tab!=="pos";$("cmp").hidden=tab!=="cmp";if(tab==="pos")renderPos();if(tab==="cmp")renderCmp()}));
 $("pos").addEventListener("change",e=>{if(e.target.id==="pcat"){POSCAT=e.target.value;renderPos()}});
+/*CMP-START*/
+const szLabel=(k,z)=>k==="l"?(z<1?Math.round(z*1000)+" мл":+z.toFixed(3)+" л"):(z<1?Math.round(z*1000)+" г":+z.toFixed(3)+" кг");
+const okey=x=>x.m.b+"|"+(x.it.fat??"")+"|"+x.gk;
+function cmpItems(cat){const PC=prep().filter(x=>x.it.category===cat),d=new Set(PC.filter(x=>x.direct).map(x=>nz(x.it.chain)));return PC.filter(x=>x.direct||!d.has(nz(x.it.chain)))}
+function cmpData(cat,sz,pk,sameFat){
+const U=cmpItems(cat).filter(x=>x.gk===sz),own=U.filter(x=>x.m.s==="own"&&okey(x)===pk);if(!own.length)return null;
+const fat=own[0].it.fat??null,byChain={};own.forEach(x=>{const c=nz(x.it.chain);(byChain[c]??={name:x.it.chain,v:[]}).v.push(x.price)});
+const chains=Object.entries(byChain).map(([k,o])=>({k,name:o.name,own:med(o.v)})).sort((a,b)=>a.name.localeCompare(b.name));
+const fatOn=sameFat&&fat!=null,rows={};let nofat=0;
+U.filter(x=>x.m.s==="comp").forEach(x=>{if(fatOn&&x.it.fat!==fat){if(x.it.fat==null)nofat++;return}
+const key=x.m.b+(fatOn?"":"|"+(x.it.fat??""));const r=rows[key]??={brand:x.m.b,fat:fatOn?fat:(x.it.fat??null),p:{}};(r.p[nz(x.it.chain)]??=[]).push(x.price)});
+COMP.forEach(b=>{if(!Object.values(rows).some(r=>r.brand===b))rows[b+"|none"]={brand:b,fat:fatOn?fat:null,p:{}}});
+const list=Object.values(rows).map(r=>{const cells=chains.map(c=>{const v=r.p[c.k];if(!v)return null;const p=med(v),d=p-c.own;return{p,d,pct:d/c.own*100}}),got=cells.filter(Boolean);
+return{...r,cells,avg:got.length?got.reduce((a,c)=>a+c.pct,0)/got.length:null}}).sort((a,b)=>(a.avg==null)-(b.avg==null)||(a.avg??0)-(b.avg??0)||a.brand.localeCompare(b.brand));
+return{fat,chains,rows:list,nofat}}
+/*CMP-END*/
+let CC="",CS="",CP="",CF=true,CM="den";
+const sg=v=>(v>0.4?"+":v<-0.4?"−":"")+Math.abs(Math.round(v)),clx=d=>d>0?"ok":d<-3?"bad":"mid";
+function renderCmp(){const P=prep().filter(x=>x.m.s==="own"&&x.gk),el=$("cmp"),cnt=f=>P.filter(f).length;
+const cats=[...new Set(P.map(x=>x.it.category))].sort();
+if(!cats.length){el.innerHTML='<div class="empty">Не се пронајдени ваши производи со прочитана големина на пакување.</div>';return}
+if(!cats.includes(CC))CC=cats.slice().sort((a,b)=>cnt(x=>x.it.category===b)-cnt(x=>x.it.category===a))[0];
+const O=P.filter(x=>x.it.category===CC),sizes=[...new Set(O.map(x=>x.gk))].sort((a,b)=>+a.split("|")[1]-+b.split("|")[1]);
+if(!sizes.includes(CS))CS=sizes.slice().sort((a,b)=>O.filter(x=>x.gk===b).length-O.filter(x=>x.gk===a).length)[0];
+const prods=[...new Map(O.filter(x=>x.gk===CS).map(x=>[okey(x),x])).entries()].sort((a,b)=>a[1].m.b.localeCompare(b[1].m.b));
+if(!prods.some(p=>p[0]===CP))CP=prods.slice().sort((a,b)=>O.filter(x=>okey(x)===b[0]).length-O.filter(x=>okey(x)===a[0]).length)[0][0];
+const D=cmpData(CC,CS,CP,CF),sz=x=>szLabel(x.it.kind,x.it.size),first=O.find(x=>x.gk===CS);
+const bar=`<div class="bar"><label class="sl"><small>Категорија</small><select id="ccat">${cats.map(c=>`<option${c===CC?" selected":""}>${esc(c)}</option>`).join("")}</select></label>
+<label class="sl"><small>Големина</small><select id="csz">${sizes.map(g=>{const x=O.find(y=>y.gk===g);return`<option value="${g}"${g===CS?" selected":""}>${sz(x)}</option>`}).join("")}</select></label>
+<label class="sl"><small>Наш производ</small><select id="cprod">${prods.map(([k,x])=>`<option value="${esc(k)}"${k===CP?" selected":""}>${esc(x.m.b)} · ${x.it.fat!=null?x.it.fat+"%":"без масленост"} · ${sz(x)}</option>`).join("")}</select></label>
+<label class="sl"><input type="checkbox" id="cfat"${CF?" checked":""}> Иста масленост${D&&D.fat!=null?" ("+D.fat+"%)":""}</label>
+<span class="cseg"><button type="button" data-m="den" class="${CM==="den"?"on":""}">ден</button><button type="button" data-m="pct" class="${CM==="pct"?"on":""}">%</button></span></div>`;
+if(!D||!D.chains.length){el.innerHTML=bar+'<div class="empty">Нема цени за овој наш производ.</div>';return}
+const n=D.chains.length,cols=`230px repeat(${n},minmax(86px,1fr)) 110px`,mw=230+n*94+130,st=`grid-template-columns:${cols};min-width:${mw}px`,
+cell=c=>c?`<div class="cqc cq-${clx(c.d)}"><b>${fmt(c.p)}</b><small>${CM==="den"?sg(c.d)+" ден":sg(c.pct)+"%"}</small></div>`:'<div class="cqc cq-na">–</div>',
+w=D.rows.filter(r=>r.avg!=null),ch=w[0],exp=D.chains.filter((c,i)=>{const ps=D.rows.map(r=>r.cells[i]).filter(Boolean);return ps.length&&ps.every(p=>p.d<0)}).length,
+own=O.find(x=>okey(x)===CP);
+el.innerHTML=bar+`<div class="kpis" style="grid-template-columns:repeat(3,1fr)"><div class="kpi"><span>Најевтин конкурент (просек)</span><b class="${ch&&ch.avg<0?"hi":"lo"}">${ch?esc(ch.brand)+" "+sg(ch.avg)+"%":"–"}</b></div><div class="kpi"><span>Синџири каде сме најскапи</span><b class="${exp?"hi":"lo"}">${exp} од ${n}</b></div><div class="kpi"><span>Конкурентски брендови со податоци</span><b>${w.length} од ${COMP.length}</b></div></div>
+<section class="card pcard"><div class="cqs"><div class="cq cqh" style="${st}"><div>Производ</div>${D.chains.map(c=>`<div class="cqc">${esc(c.name)}</div>`).join("")}<div class="cqc">Просечна разлика</div></div>
+<div class="cq cqme" style="${st}"><div class="cqn"><em>НАШ</em> ${esc(own.m.b)} · ${szLabel(own.it.kind,own.it.size)}${D.fat!=null?" · "+D.fat+"%":""}</div>${D.chains.map(c=>`<div class="cqc"><b>${fmt(c.own)}</b><small>наша цена</small></div>`).join("")}<div class="cqc">–</div></div>
+${D.rows.map(r=>`<div class="cq" style="${st}"><div class="cqn">${esc(r.brand)}${r.fat!=null?" · "+r.fat+"%":""}</div>${r.cells.map(cell).join("")}${r.avg==null?'<div class="cqc cq-na">–</div>':`<div class="cqc cq-${clx(r.avg)}"><b>${sg(r.avg)}%</b></div>`}</div>`).join("")}</div></section>
+<div class="leg"><span><i style="background:var(--up)"></i>конкурентот е поевтин од нас (над 3 ден)</span><span><i style="background:var(--warn)"></i>скоро исто</span><span><i style="background:var(--down)"></i>конкурентот е поскап од нас</span></div>
+<p class="pnote">Се споредуваат производи од иста категорија, иста големина на пакување${D.fat!=null&&CF?" и иста масленост":""}, во ист синџир. „–“ значи дека производот не е пронајден во тој синџир. Разликата е цената на конкурентот минус нашата цена. Каде има податоци директно од синџирот се користат тие, инаку Пазарлук.${D.nofat?` ${D.nofat} конкурентски производи без прочитана масленост не се вклучени.`:""}</p>`}
+function exportCmp(){if(!CP)return alert("Нема податоци за извоз.");const D=cmpData(CC,CS,CP,CF);if(!D)return alert("Нема податоци за извоз.");
+const rows=[];D.rows.forEach(r=>r.cells.forEach((c,i)=>{if(c)rows.push({"Синџир":D.chains[i].name,"Конкурентски бренд":r.brand,"Масленост (%)":r.fat,"Наша цена (ден)":Math.round(D.chains[i].own*100)/100,"Цена на конкурент (ден)":Math.round(c.p*100)/100,"Разлика (ден)":Math.round(c.d*100)/100,"Разлика (%)":Math.round(c.pct*10)/10})}));
+const ws=XLSX.utils.json_to_sheet(rows);ws["!cols"]=[{wch:14},{wch:20},{wch:14},{wch:16},{wch:22},{wch:14},{wch:12}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Цена за цена");XLSX.writeFile(wb,"cena-za-cena-"+new Date().toISOString().slice(0,10)+".xlsx")}
+$("cmp").addEventListener("change",e=>{const t=e.target.id;if(t==="ccat"){CC=e.target.value;CS="";CP=""}else if(t==="csz"){CS=e.target.value;CP=""}else if(t==="cprod")CP=e.target.value;else if(t==="cfat")CF=e.target.checked;else return;renderCmp()});
+$("cmp").addEventListener("click",e=>{const b=e.target.closest("[data-m]");if(b){CM=b.dataset.m;renderCmp()}});
 fetch("data/prices.json").then(r=>r.json()).then(j=>{RAW=j.items;const m=new Map();
 j.items.forEach(it=>{const k=it.id||it.name;if(!m.has(k))m.set(k,{name:it.name,category:it.category,brand:"",items:[]});const g=m.get(k);if(!g.brand&&it.brand)g.brand=it.brand;g.items.push(it)});
 G=[...m.values()].sort((a,b)=>a.name.localeCompare(b.name));$("upd").textContent=j.updated?"Last scrape: "+j.updated:"No data yet";
