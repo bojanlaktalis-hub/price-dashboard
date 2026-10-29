@@ -6,6 +6,15 @@ UNITS = {"кг": ("kg", 1), "kg": ("kg", 1), "гр": ("kg", .001), "gr": ("kg", 
 UNIT_RE = r"(кг|kg|гр|gr|мл|ml|lt|л|l|г|g)(?![a-zа-я])"
 
 
+def parse_fat(name):
+    """'ЈОГУРТ 2,8% 1Л' -> 2.8 (fat percent), None if the name has no percentage."""
+    m = re.search(r"(\d+(?:[.,]\d+)?)\s*%", name)
+    if m:
+        v = float(m.group(1).replace(",", "."))
+        return v if v <= 100 else None
+    return None
+
+
 def parse_size(name):
     """'ЈОГУРТ 2,8% 1Л' -> (1.0, 'l'); '4х125гр' -> (0.5, 'kg'); None if no size in the name."""
     t = name.lower().replace(",", ".")
@@ -34,6 +43,9 @@ with open("prices_log.csv", encoding="utf-8-sig", newline="") as f:
         it["h"].append([r["date"], sell, reg, r["discount_price"] != ""])
 for it in items.values():
     it["h"].sort(key=lambda x: x[0])
+    f = parse_fat(it.get("name", ""))
+    if f is not None:
+        it["fat"] = f
     s = parse_size(it.get("name", ""))
     if s and 0.02 <= s[0] <= 50:        # implausible sizes are treated as "no size" and listed for a manual check
         it["size"], it["kind"] = s
